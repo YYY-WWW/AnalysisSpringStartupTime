@@ -1,18 +1,16 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.summertimewu.analysisspringstartuptime</id>
-    <name>AnalysisSpringStartupTime Template</name>
-    <vendor>summertime-wu</vendor>
+
+    <id>com.github.yyy.www.analysis.spring.startup.time</id>
+    <name>AnalysisSpringStartupTime</name>
+    <vendor>yyy-www</vendor>
 
     <depends>com.intellij.modules.platform</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.summertimewu.analysisspringstartuptime.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow id="Spring 启动耗时分析" anchor="bottom" factoryClass="com.github.yyy.www.window.AsstToolWindowFactory"/>
     </extensions>
 
-    <applicationListeners>
-        <listener class="com.github.summertimewu.analysisspringstartuptime.listeners.MyFrameStateListener" topic="com.intellij.ide.FrameStateListener"/>
-    </applicationListeners>
 </idea-plugin>

@@ -42,6 +42,12 @@ intellij {
     plugins.set(properties("platformPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) })
 }
 
+dependencies {
+    // Other dependencies
+    implementation("cn.hutool:hutool-all:5.7.10")
+    implementation("com.alibaba:fastjson:1.2.76")
+}
+
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
 changelog {
     groups.empty()
