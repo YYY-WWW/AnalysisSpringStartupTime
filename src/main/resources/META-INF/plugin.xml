@@ -9,6 +9,7 @@
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
+    <!-- 耗时展示工具窗口 -->
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Spring 启动耗时分析" anchor="bottom" factoryClass="com.github.yyy.www.window.AsstToolWindowFactory"/>
     </extensions>

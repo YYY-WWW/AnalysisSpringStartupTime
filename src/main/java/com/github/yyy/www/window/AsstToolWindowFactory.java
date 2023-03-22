@@ -1,5 +1,6 @@
 package com.github.yyy.www.window;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -13,6 +14,7 @@ public class AsstToolWindowFactory implements ToolWindowFactory {
         AsstWindow asstWindow = new AsstWindow(project);
         Content content = ContentFactory.SERVICE.getInstance().createContent(asstWindow, "", false);
         toolWindow.getContentManager().addContent(content);
+        toolWindow.setIcon(AllIcons.Actions.Find);
     }
 
 }
