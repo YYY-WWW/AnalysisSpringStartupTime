@@ -13,6 +13,8 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AsstWindow extends SimpleToolWindowPanel {
 
@@ -39,4 +41,13 @@ public class AsstWindow extends SimpleToolWindowPanel {
         setContent(tree);
     }
 
+    private long parseDuration(String s) {
+        Pattern pattern = Pattern.compile("\\((\\d+)ms\\)");
+        Matcher matcher = pattern.matcher(s);
+        if (matcher.find()) {
+            String durationStr = matcher.group(1);
+            return Long.parseLong(durationStr);
+        }
+        return 0L;
+    }
 }
