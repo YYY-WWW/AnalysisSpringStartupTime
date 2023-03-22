@@ -11,7 +11,7 @@ public class AsstToolWindowFactory implements ToolWindowFactory {
 
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
-        AsstWindow asstWindow = new AsstWindow(project);
+        AsstWindow asstWindow = new AsstWindow(project,"");
         Content content = ContentFactory.SERVICE.getInstance().createContent(asstWindow, "", false);
         toolWindow.getContentManager().addContent(content);
         toolWindow.setIcon(AllIcons.Actions.Find);

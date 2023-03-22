@@ -2,6 +2,7 @@ package com.github.yyy.www.window;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.text.CharSequenceUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.system.oshi.OshiUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.yyy.www.startup.StartupData;
@@ -31,17 +32,20 @@ import java.util.regex.Pattern;
  */
 public class AsstWindow extends SimpleToolWindowPanel {
 
-    public AsstWindow(Project project) {
+    public AsstWindow(Project project, String jsonStr) {
         super(true, true);
 
         // 创建树形结构
-        String filePath;
-        if (System.getProperty("os.name").startsWith("Windows")) {
-            filePath = "D:\\Idea\\workplace\\danding-business-order-monitor\\tmp.txt";
-        } else {
-            filePath = "/home/meta/Desktop/tmp.txt";
+        if (CharSequenceUtil.isBlank(jsonStr)) {
+            String filePath;
+            if (System.getProperty("os.name").startsWith("Windows")) {
+                filePath = "D:\\Idea\\workplace\\danding-business-order-monitor\\tmp.txt";
+            } else {
+                filePath = "/home/meta/Desktop/tmp.txt";
+            }
+            jsonStr = FileUtil.readString(filePath, StandardCharsets.UTF_8);
         }
-        String jsonStr = FileUtil.readString(filePath, StandardCharsets.UTF_8);
+
         StartupData startupData = JSON.parseObject(jsonStr, StartupData.class);
         DefaultMutableTreeNode root = this.toSwing(startupData);
         Tree tree = new Tree(new DefaultTreeModel(root));
