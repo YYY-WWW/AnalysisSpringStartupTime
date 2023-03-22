@@ -1,11 +1,13 @@
 package com.github.yyy.www.util;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,8 +99,13 @@ public class StartupUtil {
         JSONArray tags = node.getJSONObject("startupStep").getJSONArray("tags");
         String tagsStr = tags.stream().map(o -> ((JSONObject) o).getString("key") + "：" + ((JSONObject) o).getString("value")).collect(Collectors.joining("\n"));
         // duration
-        String duration = node.getString("duration");
-        return "类型：" + name + "\n" + (StrUtil.isNotBlank(tagsStr) ? tagsStr + "\n" : "") + " 耗时：" + duration;
+        String durationStr = node.getString("duration");
+        if (CharSequenceUtil.isNotBlank(durationStr)) {
+            Duration duration = Duration.parse(durationStr);
+            long millis = duration.toMillis();
+            durationStr = "(" + millis + ")ms";
+        }
+        return "类型：" + name + "\n" + (CharSequenceUtil.isNotBlank(tagsStr) ? tagsStr + "\n" : "") + " 耗时：" + durationStr;
     }
 
 }
