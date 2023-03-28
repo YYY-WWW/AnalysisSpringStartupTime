@@ -20,8 +20,11 @@
     <actions>
         <action id="com.github.yyy.www.toolbar.DialogAction"
                 class="com.github.yyy.www.toolbar.DialogAction"
-                text="Spring 耗时分析">
+                text="Spring 耗时分析"
+                icon="AllIcons.General.Filter">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
+            <add-to-group group-id="NavBarToolBar" anchor="after"
+                          relative-to-action="com.github.yyy.www.toolbar.DialogAction"/>
         </action>
     </actions>
 

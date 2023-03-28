@@ -1,13 +1,10 @@
 package com.github.yyy.www.window;
 
-import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.text.CharSequenceUtil;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.system.oshi.OshiUtil;
 import com.alibaba.fastjson.JSON;
-import com.github.yyy.www.startup.StartupData;
-import com.github.yyy.www.startup.StartupEvent;
-import com.github.yyy.www.startup.StartupStep;
+import com.github.yyy.www.startup.*;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.ColoredTreeCellRenderer;
@@ -20,52 +17,33 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import java.nio.charset.StandardCharsets;
+import java.awt.*;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Spring 启动耗时展示窗口
  */
 public class AsstWindow extends SimpleToolWindowPanel {
 
+    private Project project;
+
+
     public AsstWindow(Project project, String jsonStr) {
         super(true, true);
+        this.project = project;
 
         // 创建树形结构
         if (CharSequenceUtil.isBlank(jsonStr)) {
-            String filePath;
-            if (System.getProperty("os.name").startsWith("Windows")) {
-                filePath = "D:\\Idea\\workplace\\danding-business-order-monitor\\tmp.txt";
-            } else {
-                filePath = "/home/meta/Desktop/tmp.txt";
-            }
-            jsonStr = FileUtil.readString(filePath, StandardCharsets.UTF_8);
+            return;
         }
-
+        // 解析json 生成树形结构
         StartupData startupData = JSON.parseObject(jsonStr, StartupData.class);
-        DefaultMutableTreeNode root = this.toSwing(startupData);
-        Tree tree = new Tree(new DefaultTreeModel(root));
 
-        // 设置自定义单元格渲染器
-        tree.setCellRenderer(new ColoredTreeCellRenderer() {
-            @Override
-            public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-                if (value instanceof DefaultMutableTreeNode) {
-                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-                    Object userObject = node.getUserObject();
-                    String str = userObject.toString();
-                    long duration = parseDuration(str);
-                    append(str, new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, getColorByDuration(duration)));
-                }
-            }
-        });
 
-        // 创建滚动panel
-        JScrollPane scrollPane = new JBScrollPane(tree);
+        // 创建树
+        JScrollPane scrollPane = new JBScrollPane(buildTree(startupData));
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         // 添加树形结构到工具窗口中
@@ -73,7 +51,55 @@ public class AsstWindow extends SimpleToolWindowPanel {
 
     }
 
-    //--------------- 转为 swing ---------------//
+    @NotNull
+    private static Icon getIcon(long duration) {
+        Icon icon;
+        if (duration < 100) {
+            icon = AllIcons.General.Information;
+        } else if (duration < 500) {
+            icon = AllIcons.General.Warning;
+        } else {
+            icon = AllIcons.General.Error;
+        }
+        return icon;
+    }
+
+    private Tree buildTree(StartupData startupData) {
+        DefaultMutableTreeNode root = this.toSwing(startupData);
+        Tree tree = new Tree(new DefaultTreeModel(root));
+
+        // 设置自定义单元格渲染器
+        tree.setCellRenderer(new ColoredTreeCellRenderer() {
+
+
+            @Override
+            public void customizeCellRenderer(@NotNull JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                if (value instanceof DefaultMutableTreeNode) {
+                    // 设置字体
+                    Font font = new Font("Arial", Font.BOLD, 12);
+                    setFont(font);
+                    long duration = 0L;
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+                    Object userObject = node.getUserObject();
+                    if (userObject instanceof NodeData) {
+                        NodeData nodeData = (NodeData) userObject;
+                        duration = parseDuration(nodeData);
+                        // 设置图标
+                        Icon icon = AsstWindow.getIcon(duration);
+                        setIcon(icon);
+                    }
+
+
+                    SimpleTextAttributes simpleTextAttributes = new SimpleTextAttributes(
+                            SimpleTextAttributes.STYLE_PLAIN | SimpleTextAttributes.STYLE_BOLD,
+                            getColorByDuration(duration));
+                    append(userObject.toString(), simpleTextAttributes);
+                }
+            }
+        });
+
+        return tree;
+    }
 
     /**
      * 将树形结构转为 swing
@@ -86,17 +112,16 @@ public class AsstWindow extends SimpleToolWindowPanel {
         // 将根节点转换为 DefaultMutableTreeNode 对象
         List<DefaultMutableTreeNode> rootNodes = new ArrayList<>();
         for (StartupEvent event : roots) {
-            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(generalName(event));
+            NodeData nodeData = generateNodeData(event);
+            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(nodeData.toString());
+            treeNode.setUserObject(nodeData);
             createTreeNodes(treeNode, event.getChildren());
             rootNodes.add(treeNode);
         }
 
         // 定义 JTree
         DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode();
-        rootTreeNode.setUserObject("ROOT\n"
-                + "springBootVersion：" + startupData.getSpringBootVersion() + "\n"
-                + "startTime：" + startupData.getTimeline().getStartTime()
-        );
+        rootTreeNode.setUserObject("SpringBootVersion:" + startupData.getSpringBootVersion());
         for (DefaultMutableTreeNode rootNode : rootNodes) {
             rootTreeNode.add(rootNode);
         }
@@ -111,7 +136,9 @@ public class AsstWindow extends SimpleToolWindowPanel {
     private void createTreeNodes(DefaultMutableTreeNode parent, List<StartupEvent> children) {
         if (children != null) {
             for (StartupEvent childEvent : children) {
-                DefaultMutableTreeNode child = new DefaultMutableTreeNode(generalName(childEvent));
+                NodeData nodeData = generateNodeData(childEvent);
+                DefaultMutableTreeNode child = new DefaultMutableTreeNode(nodeData.toString());
+                child.setUserObject(nodeData);
                 parent.add(child);
                 createTreeNodes(child, childEvent.getChildren());
             }
@@ -121,21 +148,23 @@ public class AsstWindow extends SimpleToolWindowPanel {
     /**
      * 生成节点名称
      */
-    private String generalName(StartupEvent event) {
+    private NodeData generateNodeData(StartupEvent event) {
         StartupStep startupStep = event.getStartupStep();
-        // name
-        String name = startupStep.getName();
-        // tag
-        String[] tags = startupStep.getTags();
-        String tagsStr = String.join("\n", tags);
-        // duration
-        String durationStr = event.getDuration();
-        if (CharSequenceUtil.isNotBlank(durationStr)) {
-            Duration duration = Duration.parse(durationStr);
-            long millis = duration.toMillis();
-            durationStr = "(" + millis + ")ms";
+
+        NodeData nodeData = new NodeData();
+        nodeData.setStage(startupStep.getName());
+        List<StartupTag> tags = startupStep.getTags();
+        if (CollUtil.isNotEmpty(tags)) {
+            for (StartupTag tag : tags) {
+                if (tag.getKey().equals("beanName")) {
+                    nodeData.setBeanName(tag.getValue());
+                }
+            }
         }
-        return "类型：" + name + "\n" + (CharSequenceUtil.isNotBlank(tagsStr) ? tagsStr + "\n" : "") + " 耗时：" + durationStr;
+        if (CharSequenceUtil.isNotBlank(event.getDuration())) {
+            nodeData.setCostTime(Duration.parse(event.getDuration()).toMillis());
+        }
+        return nodeData;
     }
 
     //--------------- 设置渲染 ---------------//
@@ -143,23 +172,17 @@ public class AsstWindow extends SimpleToolWindowPanel {
     /**
      * 解析出消耗时长
      */
-    private long parseDuration(String s) {
-        Pattern pattern = Pattern.compile("\\((.*?)\\)");
-        Matcher matcher = pattern.matcher(s);
-        if (matcher.find()) {
-            String durationStr = matcher.group(1);
-            return Long.parseLong(durationStr);
-        }
-        return 0L;
+    private long parseDuration(NodeData nodeData) {
+        return nodeData.getCostTime() == null ? 0L : nodeData.getCostTime();
     }
 
     /**
      * 获取颜色
      */
     private JBColor getColorByDuration(long duration) {
-        if (duration < 1000) {
+        if (duration < 100) {
             return JBColor.GREEN;
-        } else if (duration < 5000) {
+        } else if (duration < 500) {
             return JBColor.ORANGE;
         } else {
             return JBColor.RED;

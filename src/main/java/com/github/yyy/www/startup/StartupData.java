@@ -1,7 +1,6 @@
 package com.github.yyy.www.startup;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -46,9 +45,8 @@ public class StartupData {
     public List<StartupEvent> convertTree() {
 
         // 用 Map 存储每个节点的 ID 和对应的 event
-        StartupEvent[] events = this.getTimeline().getEvents();
-        Map<Integer, StartupEvent> nodeMap = Arrays.stream(events)
-                .collect(Collectors.toMap(e -> e.getStartupStep().getId(), Function.identity()));
+        List<StartupEvent> events = this.getTimeline().getEvents();
+        Map<Integer, StartupEvent> nodeMap = events.stream().collect(Collectors.toMap(e -> e.getStartupStep().getId(), Function.identity()));
 
         // 构建树形结构
         List<StartupEvent> roots = new ArrayList<>();

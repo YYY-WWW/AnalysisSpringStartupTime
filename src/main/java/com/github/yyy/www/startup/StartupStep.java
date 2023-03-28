@@ -1,5 +1,7 @@
 package com.github.yyy.www.startup;
 
+import java.util.List;
+
 /**
  * 启动步骤实体类
  */
@@ -23,7 +25,7 @@ public class StartupStep {
     /**
      * 标签
      */
-    private String[] tags;
+    private List<StartupTag> startupTags;
 
     public int getId() {
         return id;
@@ -49,12 +51,12 @@ public class StartupStep {
         this.parentId = parentId;
     }
 
-    public String[] getTags() {
-        return tags;
+    public List<StartupTag> getTags() {
+        return startupTags;
     }
 
-    public void setTags(String[] tags) {
-        this.tags = tags;
+    public void setTags(List<StartupTag> startupTags) {
+        this.startupTags = startupTags;
     }
 
 }

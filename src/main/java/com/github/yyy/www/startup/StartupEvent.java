@@ -1,12 +1,7 @@
 package com.github.yyy.www.startup;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 启动耗时事件
@@ -22,12 +17,12 @@ public class StartupEvent {
     /**
      * 开始时间
      */
-    private ZonedDateTime startTime;
+    private Instant startTime;
 
     /**
      * 结束时间
      */
-    private ZonedDateTime endTime;
+    private Instant endTime;
 
     /**
      * 启动步骤
@@ -47,19 +42,19 @@ public class StartupEvent {
         this.duration = duration;
     }
 
-    public ZonedDateTime getStartTime() {
+    public Instant getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(ZonedDateTime startTime) {
+    public void setStartTime(Instant startTime) {
         this.startTime = startTime;
     }
 
-    public ZonedDateTime getEndTime() {
+    public Instant getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(ZonedDateTime endTime) {
+    public void setEndTime(Instant endTime) {
         this.endTime = endTime;
     }
 
